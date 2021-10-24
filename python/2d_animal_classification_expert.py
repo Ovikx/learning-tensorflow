@@ -5,7 +5,7 @@ from tensorflow.keras import Model
 import pandas as pd
 import numpy as np
 
-data = pd.read_csv('2D_classification_animals.csv')
+data = pd.read_csv('datasets/2D_classification_animals.csv')
 
 species_names = {
     0 : 'Kudu',
@@ -98,5 +98,4 @@ for epoch in range(200):
         f'Testing Accuracy: {test_accuracy.result()}'
     )
 
-print(model.predict([[230, 1.5]]))
-model.summary()
+print(model.predict([[270, 1.4]]))

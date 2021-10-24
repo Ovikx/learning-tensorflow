@@ -2,7 +2,7 @@ import tensorflow as tf
 from tensorflow import keras
 import pandas as pd
 
-data = pd.read_csv('1D_classification_animals.csv')
+data = pd.read_csv("datasets/1D_classification_animals.csv")
 
 species_names = {
     0 : 'Kudu',

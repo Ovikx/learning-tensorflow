@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 
-df = pd.read_csv('data.csv')
+df = pd.read_csv('datasets/data.csv')
 
 data = [df['x'].to_list(), df['y'].to_list()]
 training_threshold = int(0.7*len(data[0]))

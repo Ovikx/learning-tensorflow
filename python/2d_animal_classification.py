@@ -3,7 +3,7 @@ from tensorflow import keras
 import pandas as pd
 import numpy as np
 
-data = pd.read_csv('2D_classification_animals.csv')
+data = pd.read_csv('datasets/2D_classification_animals.csv')
 
 species_names = {
     0 : 'Kudu',
@@ -39,4 +39,3 @@ test_results = [species_names[round(v)] == species_names[test_labels[i][0]] for 
 print(test_results.count(True)/len(test_results))
 
 print(model.predict([[270, 1.4]]))
-model.summary()
