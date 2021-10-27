@@ -41,12 +41,12 @@ class ImagePreprocessor:
             arr = arr/255
         return arr
 
-    # Returns a zip with NumPy array representations of images in self.path and their respective labels as specified by self.label
+    # Returns a zip with NumPy array representations of images in self.path and their respective labels
     def dir_to_zip(self):
         features = self.dir_to_array()
         return zip(features, [self.label for i in range(len(features))])
     
-    # Returns a NumPy array representation of image referenced by path
+    # Returns a NumPy array representation of path-specified image
     def file_to_array(self, path):
         image = np.array(self.prep_image(Image.open(path)))
         if self.normalize:
