@@ -1,4 +1,3 @@
-from PIL.Image import Image
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras.layers import Dense, Flatten, Conv2D, MaxPool2D
