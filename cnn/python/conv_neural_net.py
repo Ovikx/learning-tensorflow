@@ -41,8 +41,6 @@ class FlavorPredictor(Model):
         self.mp1 = MaxPool2D()
         self.conv2 = Conv2D(32, (3,3), activation='relu')
         self.mp2 = MaxPool2D()
-        self.conv3 = Conv2D(64, (3,3), activation='relu')
-        self.mp3 = MaxPool2D()
         self.flatten = Flatten()
         self.d1 = Dense(128, activation='relu')
         self.d2 = Dense(1, activation='sigmoid')
@@ -50,10 +48,8 @@ class FlavorPredictor(Model):
     def call(self, x):
         x = self.conv1(x)
         x = self.mp1(x)
-        #x = self.conv2(x)
-        #x = self.mp2(x)
-        #x = self.conv3(x)
-        #x = self.mp3(x)
+        x = self.conv2(x)
+        x = self.mp2(x)
         x = self.flatten(x)
         x = self.d1(x)
         return self.d2(x)
@@ -106,9 +102,9 @@ for epoch in range(100):
         f'Testing Loss: {test_loss.result()}, '
         f'Testing Accuracy: {test_accuracy.result()}'
     )
-
-#print(model.predict(train_features))
-model.compile(optimizer=optimizer, loss=loss_function, metrics=test_accuracy)
-#model.evaluate(test_features, test_labels)
-print(f'{model.predict(np.array([ip.file_to_array("cnn/c.jpg")]))}')
-print(f'{model.predict(np.array([ip.file_to_array("cnn/v.jpg")]))}')
+    
+print('EXTERNAL SAMPLE TESTING\nOutputs are [0, 1] where 0 is chocolate and 1 is vanilla\n----------------------')
+print(f'Vanilla cupcakes: {model.predict(np.array([ip.file_to_array("cnn/images/external_test/v1.jpg")]))}')
+print(f'Vanilla ice cream: {model.predict(np.array([ip.file_to_array("cnn/images/external_test/v2.jpg")]))}')
+print(f'Chocolate brittle: {model.predict(np.array([ip.file_to_array("cnn/images/external_test/c1.jpg")]))}')
+print(f'Chocolate cookies: {model.predict(np.array([ip.file_to_array("cnn/images/external_test/c2.jpg")]))}')
