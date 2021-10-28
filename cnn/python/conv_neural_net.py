@@ -12,23 +12,13 @@ flavors = {
 }
 pix = 64
 
-ip = ImagePreprocessor('cnn/images/chocolate', pix, 'chocolate', normalize=True)
-chocolate_zip = list(ip.dir_to_zip())
+ip = ImagePreprocessor(normalization=255, training_threshold=0.8)
+package = ip.preprocess_dirs(['cnn/images/chocolate', 'cnn/images/vanilla'], [0, 1], True)
 
-ip.open('cnn/images/vanilla', 'vanilla')
-vanilla_zip = list(ip.dir_to_zip())
-
-comb_zip = chocolate_zip + vanilla_zip
-np.random.shuffle(comb_zip)
-features = np.array([v[0] for v in comb_zip])
-labels = np.array([0 if v[1] == 'chocolate' else 1 for v in comb_zip])
-
-train_threshold = int(len(features)*0.7)
-
-train_features = features[:train_threshold]
-train_labels = labels[:train_threshold]
-test_features = features[train_threshold:]
-test_labels = labels[train_threshold:]
+train_features = package['TRAIN_IMAGES']
+train_labels = package['TRAIN_LABELS']
+test_features = package['TEST_IMAGES']
+test_labels = package['TEST_LABELS']
 
 train_ds = tf.data.Dataset.from_tensors((train_features, train_labels)).shuffle(10000)
 test_ds = tf.data.Dataset.from_tensors((test_features, test_labels)).shuffle(10000)

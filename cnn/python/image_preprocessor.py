@@ -3,22 +3,17 @@ import os
 import numpy as np
 
 class ImagePreprocessor:
-    def __init__(self, path=None, pixels=64, label=None, normalize=False):
-        self.path = path
-        self.images = [Image.open(f'{self.path}/{f}') for f in os.listdir(path)]
+    def __init__(self, pixels=64, normalization=1, training_threshold=1):
         self.pixels = pixels
-        self.label = label
-        self.size = len(self.images)
-        self.normalize = normalize
+        self.normalization = normalization
+        self.training_threshold = training_threshold
     
-    # Sets the pointer to a new path (useful for loading different datasets)
-    def open(self, path=None, label=None):
-        self.path = path
-        self.images = [Image.open(f'{self.path}/{f}') for f in os.listdir(path)]
-        self.label = label
+    # Returns the images in specified directory
+    def load_directory_contents(self, path):
+        return [Image.open(f'{path}/{f}') for f in os.listdir(path)]
 
-    # Crops the image into a square (centered) and pixelates it
-    def prep_image(self, image, show=False):
+    # Center crops the image into a square and pixelates it
+    def prepare_image(self, image):
         width, height = image.size
         h_cut = v_cut = 0
 
@@ -28,27 +23,51 @@ class ImagePreprocessor:
             v_cut = (height - width)/2
 
         image = ImageOps.crop(image, (h_cut, v_cut, h_cut, v_cut))
-        image = image.resize((self.pixels, self.pixels), Image.BILINEAR).convert('RGB')
-        if show:
-            image.show()
-        return image
+        return image.resize((self.pixels, self.pixels), Image.BILINEAR).convert('RGB')
 
-    # Returns a NumPy array with processed images in self.path represented as NumPy arrays
-    def dir_to_array(self):
-        cropped = [self.prep_image(image) for image in self.images]
-        arr = np.array([np.array(image) for image in cropped])
-        if self.normalize:
-            arr = arr/255
-        return arr
+    # Returns a NumPy array containing image data from specified directory
+    def directory_to_array(self, path):
+        cropped = [self.prepare_image(image) for image in self.load_directory_contents(path)]
+        arr = [np.array(image) for image in cropped]
+        return np.array(arr)/self.normalization
 
-    # Returns a zip with NumPy array representations of images in self.path and their respective labels
-    def dir_to_zip(self):
-        features = self.dir_to_array()
-        return zip(features, [self.label for i in range(len(features))])
+    # Returns a dict containing features and labels--can be partitioned into training and testing data
+    def preprocess_dirs(self, paths, labels, partition=False):
+        train_features = []
+        train_labels = []
+        test_features = []
+        test_labels = []
+
+        for label_index, path in enumerate(paths):
+            cropped = [self.prepare_image(image) for image in self.load_directory_contents(path)]
+            np.random.shuffle(cropped)
+            threshold = int(len(cropped)*self.training_threshold)
+            dir_images = [np.array(image) for image in cropped]
+
+            for i, image in enumerate(dir_images):
+                if i <= threshold or not partition:
+                    train_features.append(image)
+                    train_labels.append(labels[label_index])
+                else:
+                    test_features.append(image)
+                    test_labels.append(labels[label_index])
+        
+        train_features = np.array(train_features)/255
+        train_labels = np.array(train_labels)
+        test_features = np.array(test_features)/255
+        test_labels = np.array(test_labels)
+        
+        package = {
+            'TRAIN_IMAGES' : train_features,
+            'TRAIN_LABELS' : train_labels,
+            'TEST_IMAGES' : test_features,
+            'TEST_LABELS' : test_labels
+        }
+
+        return package
     
-    # Returns a NumPy array representation of path-specified image
+    # Returns a NumPy array representation of image specified by path
     def file_to_array(self, path):
-        image = np.array(self.prep_image(Image.open(path)))
-        if self.normalize:
-            image = image/255
+        image = np.array(self.prepare_image(Image.open(path)))
+        image = image/self.normalization
         return image
