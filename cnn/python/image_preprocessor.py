@@ -52,9 +52,9 @@ class ImagePreprocessor:
                     test_features.append(image)
                     test_labels.append(labels[label_index])
         
-        train_features = np.array(train_features)/255
+        train_features = np.array(train_features)/self.normalization
         train_labels = np.array(train_labels)
-        test_features = np.array(test_features)/255
+        test_features = np.array(test_features)/self.normalization
         test_labels = np.array(test_labels)
         
         package = {
