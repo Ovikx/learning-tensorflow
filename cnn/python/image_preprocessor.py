@@ -3,20 +3,22 @@ import os
 import numpy as np
 
 class ImagePreprocessor:
-    def __init__(self, pixels=64, normalization=1, training_threshold=1, preprocess_method='square_resize'):
+    def __init__(self, pixels=64, normalization=1, training_threshold=1, resize_method='square resize', color_mode='L'):
         '''
         Constructs the ImagePreprocessor object
 
         Args:
             pixels : Integer, number of pixels along each side of the processes image
-            normalization : Integer, divisor that squeezes the RGB values
+            normalization : Integer, divisor that squeezes the color values
             training_threshold : Float, threshold that determines the proportion of data to be used for training
-            preprocess_method : String, "square_resize" squeezes the images into squares and "square_crop" removes excess content to create a square image
+            resize_method : String, "square resize" squeezes the images into squares and "square crop" removes excess content to create a square image
+            color_mode : String, see Pillow Modes documentation at https://pillow.readthedocs.io/en/stable/handbook/concepts.html#concept-modes
         '''
         self.pixels = pixels
         self.normalization = normalization
         self.training_threshold = training_threshold
-        self.preprocess_method = preprocess_method
+        self.resize_method = resize_method
+        self.color_mode = color_mode
     
     def load_directory_contents(self, path):
         '''
@@ -40,7 +42,7 @@ class ImagePreprocessor:
         Returns:
             PIL Image : Preprocessed image
         '''
-        if self.preprocess_method == 'square_crop':
+        if self.resize_method == 'square crop':
             width, height = image.size
             h_cut = v_cut = 0
 
@@ -50,7 +52,7 @@ class ImagePreprocessor:
                 v_cut = (height - width)/2
 
             image = ImageOps.crop(image, (h_cut, v_cut, h_cut, v_cut))
-        image = image.resize((self.pixels, self.pixels), Image.BILINEAR).convert('RGB')
+        image = image.resize((self.pixels, self.pixels), Image.BILINEAR).convert(self.color_mode)
         return image
 
     def directory_to_array(self, path):
@@ -66,6 +68,20 @@ class ImagePreprocessor:
         cropped = [self.prepare_image(image) for image in self.load_directory_contents(path)]
         arr = [np.array(image) for image in cropped]
         return np.array(arr)/self.normalization
+    
+    def count_channels(self, image):
+        '''
+        Counts the number of color channels in the given image
+
+        Args:
+            image : NumPy array, array representation of image
+        
+        Returns:
+            Integer : number of color channels in the image
+        '''
+        if isinstance(image[0][0], np.ndarray):
+            return len(image[0][0])
+        return 1
 
     def preprocess_dirs(self, paths, labels, partition=False):
         '''
@@ -98,9 +114,11 @@ class ImagePreprocessor:
                     test_features.append(image)
                     test_labels.append(labels[label_index])
         
-        train_features = np.array(train_features)/self.normalization
+        channels = self.count_channels(train_features[0])
+
+        train_features = np.array(train_features).reshape(-1, self.pixels, self.pixels, channels)/self.normalization
         train_labels = np.array(train_labels)
-        test_features = np.array(test_features)/self.normalization
+        test_features = np.array(test_features).reshape(-1, self.pixels, self.pixels, channels)/self.normalization
         test_labels = np.array(test_labels)
         
         package = {
@@ -123,5 +141,5 @@ class ImagePreprocessor:
             NumPy array : array representation of preprocessed input image
         '''
         image = np.array(self.prepare_image(Image.open(path)))
-        image = image/self.normalization
+        image = image.reshape(-1, self.pixels, self.pixels, self.count_channels(image))/self.normalization
         return image

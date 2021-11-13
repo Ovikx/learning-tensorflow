@@ -12,7 +12,7 @@ flavors = {
 }
 pix = 64
 
-ip = ImagePreprocessor(normalization=255, training_threshold=0.8)
+ip = ImagePreprocessor(normalization=255, training_threshold=0.8, color_mode='RGB')
 package = ip.preprocess_dirs(['cnn/images/chocolate', 'cnn/images/vanilla'], [0, 1], True)
 
 train_features = package['TRAIN_IMAGES']
@@ -93,7 +93,7 @@ for epoch in range(100):
     )
     
 print('EXTERNAL SAMPLE TESTING\nOutputs are [0, 1] where 0 is chocolate and 1 is vanilla\n----------------------')
-print(f'Vanilla cupcakes: {model.predict(np.array([ip.file_to_array("cnn/images/external_test/v1.jpg")]))}')
-print(f'Vanilla ice cream: {model.predict(np.array([ip.file_to_array("cnn/images/external_test/v2.jpg")]))}')
-print(f'Chocolate brittle: {model.predict(np.array([ip.file_to_array("cnn/images/external_test/c1.jpg")]))}')
-print(f'Chocolate cookies: {model.predict(np.array([ip.file_to_array("cnn/images/external_test/c2.jpg")]))}')
+print(f'Vanilla cupcakes: {model.predict(np.array(ip.file_to_array("cnn/images/external_test/v1.jpg")))}')
+print(f'Vanilla ice cream: {model.predict(np.array(ip.file_to_array("cnn/images/external_test/v2.jpg")))}')
+print(f'Chocolate brittle: {model.predict(np.array(ip.file_to_array("cnn/images/external_test/c1.jpg")))}')
+print(f'Chocolate cookies: {model.predict(np.array(ip.file_to_array("cnn/images/external_test/c2.jpg")))}')
